@@ -1,0 +1,29 @@
+:root {
+  --color-background: var(--greay-light);
+  --color-background-soft: var(--vt-c-black-soft);
+  --color-background-mute: var(--vt-c-black-mute);
+
+  --color-border: var(--vt-c-divider-dark-2);
+  --color-border-hover: var(--vt-c-divider-dark-1);
+
+  --color-heading: var(--vt-c-text-dark-1);
+  --color-text: var(--vt-c-white);
+  --color-text-dark: var(--black-2);
+  --color-text-light: var(--vt-c-white);
+
+  --color-navbar-brand: var(--blue-1);
+
+  --color-navbar-logout-svg: var(--blue-1);
+
+  --color-background-black: var(--black-1);
+
+  --color-orange-button: var(--orange-1);
+
+  --color-main-left-block: var(--vt-c-white);
+
+  --color-switch: var(--blue-1);
+  --color-layer: var(--greay-light-middle);
+  --color-layer-checked: var(--blue-3);
+
+  --color-circular-progress-bar-static: var(--vt-c-white);
+}
