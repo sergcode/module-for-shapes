@@ -1,108 +1,48 @@
 <script>
 import McvDrawShapes from '@/components/DrawShapes.vue'
 import {defineComponent} from 'vue'
-import {useStopwatch} from 'vue-timer-hook'
 
 export default defineComponent({
   name: 'McvTheWelcome',
   data() {
     return {
-      paintShapes: true,
-      workStarted: true,
-      darkTheme: true,
-      darkModePreference: window.matchMedia('(prefers-color-scheme: light)')
+      radiusCircle: 100,
+      squareSideSize: 80,
+      coordinatesX: 0,
+      coordinatesY: 0
     }
   },
   components: {
     McvDrawShapes
   },
-  computed: {
-    date() {
-      const date = new Date()
-      return date.toLocaleDateString()
-    }
-  },
-  setup() {
-    const offsetTimestamp = 0
-    const autoStart = false
-    const stopwatch = useStopwatch(offsetTimestamp, autoStart)
-    return {
-      stopwatch
+  methods: {
+    drawShapes(e) {
+      this.$refs.drawFigures.shapes(
+        this.radiusCircle,
+        this.squareSideSize,
+        this.coordinatesX,
+        this.coordinatesY
+      )
+
+      e.preventDefault()
     }
   },
   mounted() {
-    const file = document.createElement('link')
-    file.rel = 'stylesheet'
-    file.href = '/src/assets/dark.css'
-    file.setAttribute('data-theme', 'dark')
-    document.head.append(file)
-
-    const darkModePreference = window.matchMedia(
-        '(prefers-color-scheme: dark)'
-      ),
-      loaded = document.querySelector('.main__img-bg')
-
-    darkModePreference.addEventListener('change', e => {
-      if (e.darkTheme) {
-        file.setAttribute('data-theme', 'dark')
-        file.href = '/src/assets/dark.css'
-      } else {
-        file.setAttribute('data-theme', 'light')
-        file.href = '/src/assets/light.css'
-      }
-    })
-
+    const loaded = document.querySelector('.main__img-bg')
     window.addEventListener('load', () => {
       setTimeout(() => {
         loaded.classList.add('loaded')
       }, 200)
     })
-  },
-  methods: {
-    drawShapes() {
-      const canvas = document.getElementById('canvas')
 
-      this.paintShapes = !this.paintShapes
-      if (!this.paintShapes) {
-        console.log('PAINTING')
+    const canvas = document.getElementById('canvas'),
+      canvasWidth = canvas.getAttribute('width'),
+      canvasHeight = canvas.getAttribute('height'),
+      axisX = Math.floor(canvasWidth / 2),
+      axisY = Math.floor(canvasHeight / 2)
 
-        if (canvas.getContext) {
-          const ctx = canvas.getContext('2d')
-
-          ctx.beginPath()
-          ctx.arc(75, 75, 50, 0, Math.PI * 2, true) // Внешняя окружность
-          ctx.moveTo(110, 75)
-          ctx.arc(75, 75, 35, 0, Math.PI, false) // рот (по часовой стрелке)
-          ctx.moveTo(65, 65)
-          ctx.arc(60, 65, 5, 0, Math.PI * 2, true) // Левый глаз
-          ctx.moveTo(95, 65)
-          ctx.arc(90, 65, 5, 0, Math.PI * 2, true) // Правый глаз
-          ctx.stroke()
-        }
-      }
-    },
-
-    workingDaySwitch() {
-      this.workStarted = !this.workStarted
-      if (!this.workStarted) {
-        this.stopwatch.start()
-      } else {
-        this.stopwatch.pause()
-      }
-    },
-    prefersColorScheme() {
-      this.darkTheme = !this.darkTheme
-
-      const theme = document.head.querySelector('link[data-theme]')
-
-      if (this.darkTheme) {
-        theme.setAttribute('data-theme', 'dark')
-        theme.href = '/src/assets/dark.css'
-      } else {
-        theme.setAttribute('data-theme', 'light')
-        theme.href = '/src/assets/light.css'
-      }
-    }
+    this.coordinatesX = Math.floor(axisX - this.squareSideSize / 2)
+    this.coordinatesY = Math.floor(axisY - this.squareSideSize / 2)
   }
 })
 </script>
@@ -127,42 +67,72 @@ export default defineComponent({
                   role="presentation"
                 />
               </a>
+              <div class="main__tabs">
+                <button class="main__btn-draw-shapes active" role="button">
+                  Создать фигуры
+                </button>
+                <button class="main__btn-draw" role="button">
+                  Рисовать мышью
+                </button>
+              </div>
             </div>
-            <div class="main__options">
-              <form class="main__form" action="">
-                <fieldset>
-                  <label for="circleRadius">
-                    Радиус окружности
-                    <input id="circleRadius" value="300" type="number" />
-                  </label>
-                  <label for="squareSideSize">
-                    Размер стороны квадрата
-                    <input id="squareSideSize" value="100" type="number" />
-                  </label>
-                  <label for="coordinatesOfTheSquareX">
-                    Координаты квадрата (x, y)
-                    <span class="main__form__group">
+            <div class="main__draw-shapes">
+              <div class="main__options">
+                <form class="main__form" role="form">
+                  <fieldset>
+                    <label for="circleRadius">
+                      Радиус окружности / px
                       <input
-                        id="coordinatesOfTheSquareX"
-                        value="0"
+                        id="circleRadius"
+                        ref="circleRadius"
+                        v-model.number="radiusCircle"
                         type="number"
+                        min="0"
                       />
+                    </label>
+                    <label for="squareSideSize">
+                      Размер стороны квадрата / px
                       <input
-                        id="coordinatesOfTheSquareY"
-                        value="0"
+                        id="squareSideSize"
+                        ref="squareSideSize"
+                        v-model.number="squareSideSize"
                         type="number"
+                        min="0"
                       />
-                    </span>
-                  </label>
-                  <div class="main__form__button">
-                    <button @click="drawShapes" type="button" role="button">
-                      Нарисовать
-                    </button>
-                  </div>
-                </fieldset>
-              </form>
+                    </label>
+                    <label for="coordinatesOfTheSquareX">
+                      Координаты квадрата (x, y)
+                      <span class="main__form__group">
+                        <input
+                          id="coordinatesOfTheSquareX"
+                          ref="coordinatesOfTheSquareX"
+                          v-model.number="coordinatesX"
+                          type="number"
+                          min="0"
+                        />
+                        <input
+                          id="coordinatesOfTheSquareY"
+                          ref="coordinatesOfTheSquareY"
+                          v-model.number="coordinatesY"
+                          type="number"
+                          min="0"
+                        />
+                      </span>
+                    </label>
+                    <div class="main__form__button">
+                      <button @click="drawShapes" type="button" role="button">
+                        Создать фигуры
+                      </button>
+                    </div>
+                  </fieldset>
+                </form>
+              </div>
+              <mcv-draw-shapes
+                :axis-x="+coordinatesX"
+                :axis-y="+coordinatesY"
+                ref="drawFigures"
+              />
             </div>
-            <mcv-draw-shapes />
           </div>
         </div>
       </div>
@@ -170,7 +140,6 @@ export default defineComponent({
   </div>
 </template>
 
-<!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang="scss">
 h3 {
   margin: 40px 0 0;
@@ -197,9 +166,29 @@ li {
   vertical-align: middle;
 }
 
+@mixin button($width, $color: #ff6000, $colorText: white) {
+  width: $width;
+  padding: 16px 20px;
+  border-radius: 5px;
+  border: 1px solid $color;
+  text-align: center;
+  font-size: 18px;
+  color: $colorText;
+  letter-spacing: 1px;
+  background-color: $color;
+  transition: 0.3s ease;
+
+  &:hover {
+    background-color: #ff7822;
+  }
+
+  &:active {
+    background-color: #a13d00;
+  }
+}
+
 .main {
   position: relative;
-  //overflow: hidden;
   display: flex;
   top: 0;
   height: 100vh;
@@ -281,8 +270,36 @@ li {
   }
 
   &__blocklogo {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
     padding-top: 30px;
     padding-bottom: 30px;
+  }
+
+  &__tabs {
+    display: flex;
+    flex-wrap: wrap;
+
+    button {
+      opacity: 0.6;
+      @include button(250px, white, black);
+      transition: 0.3s ease;
+
+      &:first-child {
+        margin-right: calc(3rem * 0.6);
+      }
+
+      &:hover {
+        opacity: 1;
+        background-color: white;
+      }
+
+      &.active {
+        opacity: 1;
+        background-color: white;
+      }
+    }
   }
 
   &__logo {
@@ -336,9 +353,10 @@ li {
       width: 100%;
       padding-right: calc(3rem * 0.3);
       padding-left: calc(3rem * 0.3);
-      font-size: 20px;
+      font-size: 18px;
       font-weight: 100;
       letter-spacing: 1px;
+      color: white;
     }
     input {
       margin-top: 30px;
@@ -350,7 +368,7 @@ li {
       background-color: transparent;
 
       &:focus {
-        background-color: rgba(255, 96, 0, 0.15);
+        background-color: rgba(255, 255, 255, 0.15);
       }
 
       &:invalid {
@@ -359,34 +377,22 @@ li {
     }
 
     &__button {
-      width: 200px;
+      width: 250px;
       margin-top: auto;
       padding-right: calc(3rem * 0.3);
       padding-left: calc(3rem * 0.3);
     }
 
     button {
-      width: 100%;
-      padding: 16px 20px;
-      border-radius: 5px;
-      border: 1px solid #ff6000;
-      font-size: 18px;
-      color: white;
-      letter-spacing: 1px;
-      background-color: #ff6000;
-      transition: 0.3s ease;
-
-      &:hover {
-        background-color: #ff7822;
-      }
-
-      &:active {
-        background-color: #a13d00;
-      }
+      @include button(100%);
     }
   }
 
-  &__wrapper-figures {
+  &__draw-shapes {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
   }
 }
 </style>
