@@ -286,7 +286,7 @@ li {
     flex-wrap: wrap;
     justify-content: space-between;
     padding-top: 30px;
-    padding-bottom: 30px;
+    padding-bottom: 68px;
   }
 
   &__tabs {
@@ -332,7 +332,6 @@ li {
   }
 
   &__options {
-    padding-top: 38px;
     padding-bottom: 38px;
   }
 

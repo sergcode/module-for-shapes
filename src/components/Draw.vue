@@ -66,6 +66,8 @@ export default {
 
 <style scoped lang="scss">
 .main__wrapper-figures {
+  display: flex;
+  flex-direction: column;
   width: 100%;
   height: 100%;
 }
@@ -75,6 +77,8 @@ export default {
   margin: auto;
   border-radius: 5px;
   border: 1px solid #ff6000;
-  background-color: rgba(0, 0, 0, 0.3);
+  background-color: rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(7px);
+  transition: all 0.3s ease;
 }
 </style>
