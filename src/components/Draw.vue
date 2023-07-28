@@ -77,7 +77,7 @@ export default {
   margin: auto;
   border-radius: 5px;
   border: 1px solid #ff6000;
-  background-color: rgba(0, 0, 0, 0.2);
+  background-color: rgba(0, 0, 0, 0.4);
   backdrop-filter: blur(7px);
   transition: all 0.3s ease;
 }
