@@ -20,14 +20,11 @@ export default {
   data() {
     return {
       squareCoordinatesX: this.axisX,
-      squareCoordinatesY: this.axisY,
-      x: 0,
-      y: 0,
-      isDrawing: false
+      squareCoordinatesY: this.axisY
     }
   },
   methods: {
-    drawShapes(radius, squareSideSize, coordinatesX, coordinatesY, strokeFill) {
+    drawShapes(radius, squareSideSize, coordinatesX, coordinatesY) {
       const ctx = this.canvas,
         canvasWidth = ctx.canvas.width,
         canvasHeight = ctx.canvas.height,
@@ -36,70 +33,160 @@ export default {
 
       ctx.lineWidth = 7
       ctx.clearRect(0, 0, canvasWidth, canvasHeight)
-      this.circle(ctx, axisX, axisY, radius, strokeFill)
-      this.square(coordinatesX, coordinatesY, ctx, squareSideSize, strokeFill)
+      this.circle(ctx, axisX, axisY, radius)
+      this.square(coordinatesX, coordinatesY, ctx, squareSideSize)
+      this.dragAndDrop(axisX, axisY, radius, squareSideSize)
     },
 
     shapes(valRadius, squareSideSize, coordinatesX, coordinatesY) {
-      this.drawShapes(
-        valRadius,
-        squareSideSize,
-        coordinatesX,
-        coordinatesY,
-        false
-      )
+      this.drawShapes(valRadius, squareSideSize, coordinatesX, coordinatesY)
     },
 
-    circle(ctx, axisX, axisY, radius, strokeFill) {
+    circle(ctx, axisX, axisY, radius) {
       ctx.beginPath()
       ctx.strokeStyle = 'green'
-      ctx.fillStyle = 'yellow'
       ctx.arc(axisX, axisY, radius, 0, Math.PI * 2, false)
-      this.strokeOrFill(strokeFill, ctx)
+      ctx.stroke()
     },
 
-    square(axisX, axisY, ctx, squareSideSize, strokeFill) {
+    square(axisX, axisY, ctx, squareSideSize) {
       ctx.beginPath()
-      ctx.strokeStyle = 'white'
-      ctx.fillStyle = 'red'
-      ctx.rect(axisX, axisY, squareSideSize, squareSideSize)
-      this.strokeOrFill(strokeFill, ctx)
-      // this.squareDrawing(axisX, axisY)
-      console.log(ctx.canvas.name.square)
+      ctx.fillStyle = 'white'
+      ctx.fillRect(axisX, axisY, squareSideSize, squareSideSize)
     },
 
-    squareDrawing(x1, y1) {
-      console.log()
-    },
+    /** Canvas Drag & Drop **/
+    dragAndDrop(circleAxisX, circleAxisY, circleRadius, squareSideSize) {
+      let canvas = this.canvas.canvas,
+        context = canvas.getContext('2d')
 
-    strokeOrFill(fillCircle, ctx) {
-      if (fillCircle) {
-        ctx.fill()
-      } else {
-        ctx.stroke()
+      let canvas_width = canvas.width,
+        canvas_height = canvas.height,
+        offset_x,
+        offset_y
+
+      let get_offset = function() {
+        let canvas_offsets = canvas.getBoundingClientRect()
+        offset_x = canvas_offsets.left
+        offset_y = canvas_offsets.top
       }
-    },
 
-    beginDrawing(e) {
-      this.x = e.offsetX
-      this.y = e.offsetY
-      this.isDrawing = true
-    },
-
-    keepDrawing(e) {
-      if (this.isDrawing === true) {
-        this.squareDrawing(this.x, this.y, e.offsetX, e.offsetY)
-        this.x = e.offsetX
-        this.y = e.offsetY
+      get_offset()
+      window.onscroll = function() {
+        get_offset()
       }
-    },
+      window.onresize = function() {
+        get_offset()
+      }
+      canvas.onresize = function() {
+        get_offset()
+      }
 
-    stopDrawing(e) {
-      if (this.isDrawing === true) {
-        this.squareDrawing(this.x, this.y, e.offsetX, e.offsetY)
-        this.x = 0
-        this.y = 0
-        this.isDrawing = false
+      let shapes = []
+      let current_shapes_index = null,
+        is_dragging = false,
+        startX,
+        startY
+
+      shapes.push({
+        x: this.axisX,
+        y: this.axisY,
+        width: squareSideSize,
+        height: squareSideSize,
+        color: 'white'
+      })
+
+      let is_mouse_in_shape = function(x, y, shape) {
+        let shape_left = shape.x,
+          shape_right = shape.x + shape.width,
+          shape_top = shape.y,
+          shape_bottom = shape.y + shape.height
+
+        return x > shape_left && x < shape_right && y > shape_top && y < shape_bottom
+      }
+
+      let mouse_down = function(event) {
+        event.preventDefault()
+
+        startX = Math.ceil(event.clientX - offset_x)
+        startY = Math.ceil(event.clientY - offset_y)
+
+        let index = 0
+
+        for (let shape of shapes) {
+          if (is_mouse_in_shape(startX, startY, shape)) {
+            current_shapes_index = index
+            is_dragging = true
+            return
+          }
+
+          index++
+        }
+      }
+
+      let mouse_up = function(event) {
+        if (!is_dragging) {
+          return
+        }
+
+        event.preventDefault()
+        is_dragging = false
+      }
+
+      let mouse_out = function(event) {
+        if (!is_dragging) {
+          return
+        }
+
+        event.preventDefault()
+        is_dragging = false
+      }
+
+      let mouse_move = function(event) {
+        if (is_dragging) {
+          event.preventDefault()
+          let mouseX = Math.ceil(event.clientX - offset_x),
+            mouseY = Math.ceil(event.clientY - offset_y)
+
+          let dx = mouseX - startX,
+            dy = mouseY - startY
+
+          let current_shape = shapes[current_shapes_index]
+          current_shape.x += dx
+          current_shape.y += dy
+
+          let sumLessX = circleAxisX - circleRadius,
+            sumLessY = circleAxisY - circleRadius,
+            sumMoreX = circleAxisX + circleRadius - current_shape.width,
+            sumMoreY = circleAxisY + circleRadius - current_shape.height
+
+          if (
+            current_shape.x >= sumLessX &&
+            current_shape.y >= sumLessY &&
+            current_shape.x <= sumMoreX &&
+            current_shape.y <= sumMoreY
+          ) {
+            draw_shapes()
+          }
+
+          startX = mouseX
+          startY = mouseY
+        }
+      }
+
+      canvas.onmousedown = mouse_down
+      canvas.onmouseup = mouse_up
+      canvas.onmouseout = mouse_out
+      canvas.onmousemove = mouse_move
+
+      let draw_shapes = () => {
+        context.clearRect(0, 0, canvas_width, canvas_height)
+        for (let shape of shapes) {
+          context.fillRect(shape.x, shape.y, shape.width, shape.height)
+        }
+        context.strokeStyle = 'green'
+        context.arc(circleAxisX, circleAxisY, circleRadius, 0, Math.PI * 2, false)
+        context.stroke()
       }
     }
   },

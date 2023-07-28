@@ -1,5 +1,6 @@
 <script>
 import McvDrawShapes from '@/components/DrawShapes.vue'
+import McvDraw from '@/components/Draw.vue'
 import {defineComponent} from 'vue'
 
 export default defineComponent({
@@ -9,11 +10,14 @@ export default defineComponent({
       radiusCircle: 100,
       squareSideSize: 80,
       coordinatesX: 0,
-      coordinatesY: 0
+      coordinatesY: 0,
+      btnDrawShapes: true,
+      btnDraw: false
     }
   },
   components: {
-    McvDrawShapes
+    McvDrawShapes,
+    McvDraw
   },
   methods: {
     drawShapes(e) {
@@ -25,6 +29,16 @@ export default defineComponent({
       )
 
       e.preventDefault()
+    },
+
+    toggleTabsDrawShapes() {
+      this.btnDrawShapes = true
+      this.btnDraw = false
+    },
+
+    toggleTabsDraw() {
+      this.btnDraw = true
+      this.btnDrawShapes = false
     }
   },
   mounted() {
@@ -41,8 +55,8 @@ export default defineComponent({
       axisX = Math.floor(canvasWidth / 2),
       axisY = Math.floor(canvasHeight / 2)
 
-    this.coordinatesX = Math.floor(axisX - this.squareSideSize / 2)
-    this.coordinatesY = Math.floor(axisY - this.squareSideSize / 2)
+    this.coordinatesX += Math.floor(axisX - this.squareSideSize / 2)
+    this.coordinatesY += Math.floor(axisY - this.squareSideSize / 2)
   }
 })
 </script>
@@ -68,15 +82,20 @@ export default defineComponent({
                 />
               </a>
               <div class="main__tabs">
-                <button class="main__btn-draw-shapes active" role="button">
+                <button
+                  @click="toggleTabsDrawShapes"
+                  :class="{active: btnDrawShapes}"
+                  role="button"
+                >
                   Создать фигуры
                 </button>
-                <button class="main__btn-draw" role="button">
+
+                <button @click="toggleTabsDraw" :class="{active: btnDraw}" role="button">
                   Рисовать мышью
                 </button>
               </div>
             </div>
-            <div class="main__draw-shapes">
+            <div v-if="btnDrawShapes" class="main__draw-shapes">
               <div class="main__options">
                 <form class="main__form" role="form">
                   <fieldset>
@@ -85,7 +104,7 @@ export default defineComponent({
                       <input
                         id="circleRadius"
                         ref="circleRadius"
-                        v-model.number="radiusCircle"
+                        v-model="radiusCircle"
                         type="number"
                         min="0"
                       />
@@ -95,7 +114,7 @@ export default defineComponent({
                       <input
                         id="squareSideSize"
                         ref="squareSideSize"
-                        v-model.number="squareSideSize"
+                        v-model="squareSideSize"
                         type="number"
                         min="0"
                       />
@@ -106,14 +125,14 @@ export default defineComponent({
                         <input
                           id="coordinatesOfTheSquareX"
                           ref="coordinatesOfTheSquareX"
-                          v-model.number="coordinatesX"
+                          v-model="coordinatesX"
                           type="number"
                           min="0"
                         />
                         <input
                           id="coordinatesOfTheSquareY"
                           ref="coordinatesOfTheSquareY"
-                          v-model.number="coordinatesY"
+                          v-model="coordinatesY"
                           type="number"
                           min="0"
                         />
@@ -127,12 +146,9 @@ export default defineComponent({
                   </fieldset>
                 </form>
               </div>
-              <mcv-draw-shapes
-                :axis-x="+coordinatesX"
-                :axis-y="+coordinatesY"
-                ref="drawFigures"
-              />
+              <mcv-draw-shapes :axis-x="+coordinatesX" :axis-y="+coordinatesY" ref="drawFigures" />
             </div>
+            <mcv-draw v-else />
           </div>
         </div>
       </div>
@@ -221,11 +237,7 @@ li {
     left: 0;
     width: 100%;
     height: 100%;
-    background-image: -webkit-linear-gradient(
-      top,
-      rgba(0, 0, 0, 0.6),
-      rgba(0, 0, 0, 0.7)
-    );
+    background-image: -webkit-linear-gradient(top, rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.7));
   }
 
   &__container {

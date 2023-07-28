@@ -12,7 +12,7 @@
 
 <script>
 export default {
-  name: 'McvDrawShapes',
+  name: 'McvDraw',
   data() {
     return {
       x: 0,
